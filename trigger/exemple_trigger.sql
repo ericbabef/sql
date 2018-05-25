@@ -7,15 +7,16 @@ CREATE FUNCTION sig.papph_commune_insee_superf()
     LANGUAGE 'plpgsql'
     COST 100
     VOLATILE NOT LEAKPROOF 
-    COST 100
 AS $BODY$
 BEGIN 
-	NEW.commune := nom_com FROM sig.communes_secteur_papph WHERE sde.st_intersects(NEW.shape, shape);
-	NEW.code_insee := insee_com FROM sig.communes_secteur_papph WHERE sde.st_intersects(NEW.shape, shape);
-	NEW.subdi := subdivision FROM sig.communes_secteur_papph WHERE sde.st_intersects(NEW.shape, shape);
+	NEW.commune := nom_com FROM sig.papph_communes_secteur WHERE sde.st_intersects(NEW.shape, shape);
+	NEW.code_insee := insee_com FROM sig.papph_communes_secteur WHERE sde.st_intersects(NEW.shape, shape);
+	NEW.subdi := subdivision FROM sig.papph_communes_secteur WHERE sde.st_intersects(NEW.shape, shape);
 	NEW.superf_espace := st_area(NEW.shape);	
+	NEW.id_parcelle := string_agg(DISTINCT CONCAT(section,parcelle), ', ') FROM sig.cadastre_parcelle WHERE sde.st_intersects(NEW.shape, shape);
 	RETURN NEW; 
 	END
+
 $BODY$;
 
 ALTER FUNCTION sig.papph_commune_insee_superf()
